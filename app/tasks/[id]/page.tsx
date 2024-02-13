@@ -1,3 +1,3 @@
-import CreateTask from "@/app/tasks/new/page";
+import FormPage from "@/app/tasks/new/page";
 
-export default CreateTask;
+export default FormPage;

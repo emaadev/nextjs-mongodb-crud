@@ -5,7 +5,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
-const CreateTask = () => {
+const FormPage = () => {
   const router = useRouter();
   const params = useParams();
 
@@ -28,9 +28,6 @@ const CreateTask = () => {
     } else {
       await handleUpdate();
     }
-
-    router.push("/");
-    router.refresh();
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -59,6 +56,9 @@ const CreateTask = () => {
     } catch (error) {
       console.log("Something went wrong.");
     }
+
+    router.push("/");
+    router.refresh();
   };
 
   const handleUpdate = async () => {
@@ -79,6 +79,9 @@ const CreateTask = () => {
     } catch (error) {
       alert("Something went wrong");
     }
+
+    router.push("/");
+    router.refresh();
   };
 
   const handleDelete = async () => {
@@ -96,36 +99,30 @@ const CreateTask = () => {
         return null;
       }
 
-      setNewTask({
-        title: "",
-        description: "",
-      });
-
       alert("Tarea eliminada correctamente");
     } catch (error) {
       console.log("Something went wrong.");
     }
 
-    router.refresh();
     router.push("/");
-  };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getTask = async () => {
-    const res = await fetch(`/api/tasks/${params.id}`);
-    const data = await res.json();
-
-    setNewTask({
-      title: data.title,
-      description: data.description,
-    });
+    router.refresh();
   };
 
   useEffect(() => {
+    const getTask = async () => {
+      const res = await fetch(`/api/tasks/${params.id}`);
+      const data = await res.json();
+
+      setNewTask({
+        title: data.title,
+        description: data.description,
+      });
+    };
+
     if (params.id) {
       getTask();
     }
-  }, [getTask, params.id]);
+  }, [params.id]);
 
   return (
     <section className="h-full m-auto flex-col w-[70%] flex justify-center items-start">
@@ -184,4 +181,4 @@ const CreateTask = () => {
   );
 };
 
-export default CreateTask;
+export default FormPage;
