@@ -1,10 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useState } from "react";
 
-const Page = () => {
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+
+const CreateTask = () => {
   const router = useRouter();
+  const params = useParams();
+
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -40,23 +44,62 @@ const Page = () => {
 
       console.log("The task was created successfully!");
 
-      router.refresh();
       router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.log("Something went wrong.");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${params.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res) {
+        console.log("Something went wrong.");
+        return null;
+      }
+
+      setNewTask({
+        title: "",
+        description: "",
+      });
+
+      alert("Tarea eliminada correctamente");
+
+      router.push("/");
+      router.refresh();
     } catch (error) {
       console.log("Something went wrong.");
     }
   };
 
   return (
-    <div className="h-full m-auto flex-col w-[50%] flex justify-center items-start">
-      <a
-        href="/"
-        className="bg-transparent-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-gray-700 mb-10 border border-white text-sm"
-      >
-        ← Return to home
-      </a>
+    <section className="h-full m-auto flex-col w-[70%] flex justify-center items-start">
+      <div className="w-full mb-10 flex justify-between">
+        <Link
+          href="/"
+          className="bg-transparent-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-gray-700 border border-white text-sm"
+        >
+          ← Return to home
+        </Link>
 
-      <h1 className="text-3xl font-semibold mb-4">Create a new task</h1>
+        {params.id && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="bg-transparent-700 font-semibold px-4 py-2 bg-red-700 text-white rounded-md hover:bg-gray-700 border border-white text-sm"
+          >
+            Delete task
+          </button>
+        )}
+      </div>
+
+      <h1 className="text-3xl font-semibold mb-4">
+        {params.id ? "Update task" : "Create a new task"}
+      </h1>
 
       <form
         onSubmit={handleSubmit}
@@ -77,12 +120,15 @@ const Page = () => {
           value={newTask.description}
           onChange={handleChange}
         />
-        <button className="bg-green-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-green-600">
-          Create Task
+        <button
+          type="submit"
+          className="bg-green-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-green-600"
+        >
+          {params.id ? "Update" : "Create Task"}
         </button>
       </form>
-    </div>
+    </section>
   );
 };
 
-export default Page;
+export default CreateTask;

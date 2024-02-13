@@ -8,13 +8,6 @@ export default function Home() {
       </header>
 
       <Tasks />
-
-      <a
-        href="/tasks/new"
-        className="bg-blue-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-blue-600 mt-10 text-sm"
-      >
-        Create new task
-      </a>
     </main>
   );
 }
