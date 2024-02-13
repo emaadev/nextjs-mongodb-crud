@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -18,6 +18,19 @@ const CreateTask = () => {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setNewTask({ ...newTask, [e.target.name]: e.target.value });
+  };
+
+  const handleAction = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!params.id) {
+      await handleSubmit(e);
+    } else {
+      await handleUpdate();
+    }
+
+    router.push("/");
+    router.refresh();
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -43,15 +56,36 @@ const CreateTask = () => {
       });
 
       console.log("The task was created successfully!");
-
-      router.push("/");
-      router.refresh();
     } catch (error) {
       console.log("Something went wrong.");
     }
   };
 
+  const handleUpdate = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${params.id}`, {
+        method: "PUT",
+        body: JSON.stringify(newTask),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res) {
+        alert("Something went wrong.");
+      }
+
+      alert("Tarea actualizada correctamente!");
+    } catch (error) {
+      alert("Something went wrong");
+    }
+  };
+
   const handleDelete = async () => {
+    if (!window.confirm("Do you really want to delete this task?")) {
+      return;
+    }
+
     try {
       const res = await fetch(`/api/tasks/${params.id}`, {
         method: "DELETE",
@@ -68,13 +102,30 @@ const CreateTask = () => {
       });
 
       alert("Tarea eliminada correctamente");
-
-      router.push("/");
-      router.refresh();
     } catch (error) {
       console.log("Something went wrong.");
     }
+
+    router.refresh();
+    router.push("/");
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getTask = async () => {
+    const res = await fetch(`/api/tasks/${params.id}`);
+    const data = await res.json();
+
+    setNewTask({
+      title: data.title,
+      description: data.description,
+    });
+  };
+
+  useEffect(() => {
+    if (params.id) {
+      getTask();
+    }
+  }, [getTask, params.id]);
 
   return (
     <section className="h-full m-auto flex-col w-[70%] flex justify-center items-start">
@@ -92,7 +143,7 @@ const CreateTask = () => {
             onClick={handleDelete}
             className="bg-transparent-700 font-semibold px-4 py-2 bg-red-700 text-white rounded-md hover:bg-gray-700 border border-white text-sm"
           >
-            Delete task
+            Delete
           </button>
         )}
       </div>
@@ -102,7 +153,7 @@ const CreateTask = () => {
       </h1>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleAction}
         className="flex flex-col gap-4 w-full justify-center items-start"
       >
         <input
@@ -113,6 +164,7 @@ const CreateTask = () => {
           value={newTask.title}
           onChange={handleChange}
         />
+
         <textarea
           name="description"
           placeholder="Description..."
@@ -120,6 +172,7 @@ const CreateTask = () => {
           value={newTask.description}
           onChange={handleChange}
         />
+
         <button
           type="submit"
           className="bg-green-700 font-semibold px-4 py-2 text-white rounded-md hover:bg-green-600"
